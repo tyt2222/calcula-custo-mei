@@ -13,6 +13,39 @@
     --danger-hover: #dc2626;
     --whatsapp-color: #25D366;
     --whatsapp-hover: #128C7E;
+    
+    /* New vars for inputs and specific backgrounds */
+    --input-bg: #ffffff;
+    --row-bg: #f8fafc;
+    --highlight-bg: #eff6ff;
+    --highlight-border: #93c5fd;
+    --calc-bg: #dbeafe;
+    --calc-text: #1e40af;
+    --success-bg: #ecfdf5;
+    --success-border: #a7f3d0;
+    --success-text: #065f46;
+}
+
+body.dark-mode {
+    --primary-color: #3b82f6;
+    --primary-hover: #60a5fa;
+    --secondary-color: #334155;
+    --secondary-hover: #475569;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    
+    --input-bg: #0f172a;
+    --row-bg: #0f172a;
+    --highlight-bg: #172554;
+    --highlight-border: #1e3a8a;
+    --calc-bg: #1e3a8a;
+    --calc-text: #bfdbfe;
+    --success-bg: #064e3b;
+    --success-border: #047857;
+    --success-text: #6ee7b7;
 }
 
 * {
@@ -27,6 +60,7 @@ body {
     color: var(--text-main);
     line-height: 1.5;
     padding: 2rem 1rem;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .container {
@@ -40,10 +74,36 @@ header {
     position: relative;
 }
 
+.header-top {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
 header h1 {
     font-size: 1.8rem;
     color: var(--primary-color);
-    margin-bottom: 0.5rem;
+    margin: 0;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-icon:hover {
+    background-color: var(--secondary-color);
+    color: var(--text-main);
 }
 
 header p {
@@ -55,11 +115,11 @@ header p {
     margin-top: 0.5rem;
     font-size: 0.8rem;
     color: var(--success-color);
-    background-color: #ecfdf5;
+    background-color: var(--success-bg);
     padding: 0.2rem 0.5rem;
     border-radius: 12px;
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity 0.3s, background-color 0.3s;
 }
 
 .save-status.show {
@@ -72,7 +132,8 @@ header p {
     border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: background-color 0.3s, border-color 0.3s;
 }
 
 .header-input {
@@ -108,10 +169,11 @@ header p {
     gap: 0.5rem;
     margin-bottom: 0.5rem;
     align-items: center;
-    background: #f8fafc;
+    background: var(--row-bg);
     padding: 0.5rem;
     border-radius: 6px;
     border: 1px solid var(--border-color);
+    transition: background-color 0.3s, border-color 0.3s;
 }
 
 .material-row input, .material-row select {
@@ -159,10 +221,11 @@ header p {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background-color 0.2s;
 }
 
 .btn-remove:hover {
-    background-color: #fee2e2;
+    background-color: var(--secondary-color);
 }
 
 .input-row {
@@ -172,27 +235,29 @@ header p {
 }
 
 .calculator-box {
-    background-color: #eff6ff;
-    border: 1px dashed #93c5fd;
+    background-color: var(--highlight-bg);
+    border: 1px dashed var(--highlight-border);
     padding: 1rem;
     border-radius: 6px;
     margin-bottom: 1.5rem;
+    transition: background-color 0.3s, border-color 0.3s;
 }
 
 .calculator-box h3 {
     font-size: 1rem;
-    color: #1e3a8a;
+    color: var(--primary-color);
     margin-bottom: 0.75rem;
 }
 
 .calculated-highlight {
     margin-top: 1rem;
     font-size: 1.05rem;
-    color: #1e40af;
-    background: #dbeafe;
+    color: var(--calc-text);
+    background: var(--calc-bg);
     padding: 0.5rem;
     border-radius: 4px;
     text-align: center;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .mt-3 {
@@ -223,13 +288,15 @@ input, select {
     border-radius: 4px;
     font-size: 0.95rem;
     font-family: inherit;
-    background-color: white;
+    background-color: var(--input-bg);
+    color: var(--text-main);
+    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
 }
 
 input:focus, select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .action-buttons {
@@ -271,20 +338,23 @@ button {
     padding: 0.75rem 1.5rem;
     width: 100%;
     font-size: 1.1rem;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4);
 }
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
+    box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.5);
+    transform: translateY(-1px);
 }
 
 .btn-danger {
-    background-color: white;
+    background-color: transparent;
     color: var(--danger-color);
     border: 1px solid var(--danger-color);
 }
 
 .btn-danger:hover {
-    background-color: #fee2e2;
+    background-color: rgba(239, 68, 68, 0.1);
 }
 
 .btn-whatsapp {
@@ -301,7 +371,7 @@ button {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .result-grid {
@@ -325,20 +395,21 @@ button {
 
 .total-cost {
     font-size: 1.1rem;
-    color: #b91c1c;
+    color: var(--danger-color);
     margin-top: 0.5rem;
     font-weight: 600;
 }
 
 .suggested-price {
     font-size: 1.25rem;
-    color: #065f46;
-    background-color: #ecfdf5;
+    color: var(--success-text);
+    background-color: var(--success-bg);
     padding: 1rem;
     border-radius: 8px;
-    border: 1px solid #a7f3d0;
+    border: 1px solid var(--success-border);
     margin-top: 0.5rem;
     font-weight: 700;
+    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
 }
 
 .profit {
@@ -387,7 +458,7 @@ button {
     
     .row-cost-display {
         text-align: left;
-        background: #e0e7ff;
+        background: var(--highlight-bg);
         padding: 0.5rem;
         border-radius: 4px;
         display: inline-block;

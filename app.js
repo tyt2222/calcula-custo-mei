@@ -7,6 +7,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultSection = document.getElementById('result-section');
     const saveStatus = document.getElementById('save-status');
 
+    // Theme logic
+    const themeToggle = document.getElementById('theme-toggle');
+    const sunIcon = document.querySelector('.sun-icon');
+    const moonIcon = document.querySelector('.moon-icon');
+
+    const currentTheme = localStorage.getItem('theme') || (window.matchMedia("(prefers-color-scheme: dark)").matches ? 'dark' : 'light');
+    if (currentTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';
+    }
+
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        
+        if (isDark) {
+            sunIcon.style.display = 'none';
+            moonIcon.style.display = 'block';
+        } else {
+            sunIcon.style.display = 'block';
+            moonIcon.style.display = 'none';
+        }
+    });
+
     // Labor inputs
     const desiredSalaryInput = document.getElementById('desired-salary');
     const daysPerWeekInput = document.getElementById('days-per-week');
@@ -190,13 +216,11 @@ document.addEventListener('DOMContentLoaded', () => {
             let rowCost = 0;
 
             if (price > 0 && pkg > 0 && used > 0) {
-                // Check if units are compatible (e.g. mass and volume shouldn't mix, but for MVP let's just convert to base units)
                 const pkgType = getUnitType(pkgUnit);
                 const usedType = getUnitType(usedUnit);
                 
                 if(pkgType !== usedType && pkgType !== 'unit' && usedType !== 'unit') {
-                    // Warning: incompatible units
-                    costDisplay.textContent = 'Erro de un.';
+                    costDisplay.textContent = 'Erro un.';
                     costDisplay.style.color = 'var(--danger-color)';
                 } else {
                     const pkgBase = pkg * getUnitMultiplier(pkgUnit);
@@ -245,7 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
         resultSection.scrollIntoView({ behavior: 'smooth' });
     }
 
-    // Storage Functions
     function saveData() {
         const data = {
             productName: document.getElementById('product-name').value,
