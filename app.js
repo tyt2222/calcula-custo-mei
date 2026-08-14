@@ -433,4 +433,171 @@ document.addEventListener('DOMContentLoaded', () => {
         const encodedText = encodeURIComponent(text);
         window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
     }
+
+    // --- OCR Logic ---
+    const receiptUpload = document.getElementById('receipt-upload');
+    const btnUploadReceipt = document.getElementById('btn-upload-receipt');
+    const ocrLoading = document.getElementById('ocr-loading');
+    const ocrResults = document.getElementById('ocr-results');
+    const ocrItemsList = document.getElementById('ocr-items-list');
+
+    if(btnUploadReceipt) {
+        btnUploadReceipt.addEventListener('click', () => receiptUpload.click());
+    }
+
+    if(receiptUpload) {
+        receiptUpload.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            ocrLoading.classList.remove('hidden');
+            ocrResults.classList.add('hidden');
+            ocrItemsList.innerHTML = '';
+
+            try {
+                let imageUrl = '';
+                
+                if (file.type === 'application/pdf') {
+                    // PDF setup
+                    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+                    
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+                    const page = await pdf.getPage(1); // Le a 1a página do PDF
+                    const viewport = page.getViewport({scale: 2.0});
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    await page.render({canvasContext: context, viewport: viewport}).promise;
+                    imageUrl = canvas.toDataURL('image/png');
+                } else {
+                    imageUrl = URL.createObjectURL(file);
+                }
+
+                const result = await Tesseract.recognize(
+                    imageUrl,
+                    'por', // Portuguese
+                    { logger: m => console.log(m) }
+                );
+
+                const lines = result.data.lines.map(l => l.text.trim()).filter(l => l.length > 0);
+                parseReceiptLines(lines);
+
+            } catch (err) {
+                console.error(err);
+                alert('Erro ao processar o documento. Tente novamente com uma imagem mais nítida.');
+            } finally {
+                ocrLoading.classList.add('hidden');
+                receiptUpload.value = ''; 
+            }
+        });
+    }
+
+    function parseReceiptLines(lines) {
+        const items = [];
+        // Tenta achar padrões com preços no final da linha
+        const priceRegex = /(?:R\$)?\s*(\d+[.,]\d{2})$/i;
+        
+        lines.forEach(line => {
+            const match = line.match(priceRegex);
+            if(match) {
+                let name = line.replace(priceRegex, '').trim();
+                // Limpeza basica de lixo comum em cupom
+                name = name.replace(/^[\d\s*X*-]+/, '').trim(); 
+                if(name.length > 2) {
+                    const price = parseFloat(match[1].replace(',', '.'));
+                    // Tenta adivinhar tamanho se houver algo como "1KG" ou "500G" no nome
+                    let pkg = 1;
+                    let pkgUnit = 'un';
+                    
+                    const kgMatch = name.match(/(\d+[.,]?\d*)\s*KG/i);
+                    const gMatch = name.match(/(\d+[.,]?\d*)\s*G(?!\w)/i);
+                    const lMatch = name.match(/(\d+[.,]?\d*)\s*L(?!\w)/i);
+                    const mlMatch = name.match(/(\d+[.,]?\d*)\s*ML/i);
+                    
+                    if (kgMatch) { pkg = parseFloat(kgMatch[1].replace(',','.')); pkgUnit = 'kg'; }
+                    else if (gMatch) { pkg = parseFloat(gMatch[1].replace(',','.')); pkgUnit = 'g'; }
+                    else if (lMatch) { pkg = parseFloat(lMatch[1].replace(',','.')); pkgUnit = 'l'; }
+                    else if (mlMatch) { pkg = parseFloat(mlMatch[1].replace(',','.')); pkgUnit = 'ml'; }
+                    
+                    items.push({ name, price, pkg, pkgUnit });
+                }
+            }
+        });
+
+        if(items.length > 0) {
+            renderOcrItems(items);
+            ocrResults.classList.remove('hidden');
+        } else {
+            alert('Não foi possível extrair produtos com preços. Verifique a nitidez ou digite manualmente.');
+        }
+    }
+
+    function renderOcrItems(items) {
+        ocrItemsList.innerHTML = '';
+        items.forEach((item) => {
+            const row = document.createElement('div');
+            row.className = 'ocr-item-row';
+            
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.value = item.name;
+            nameInput.className = 'ocr-name';
+            nameInput.placeholder = 'Nome do Produto';
+            
+            const priceInput = document.createElement('input');
+            priceInput.type = 'number';
+            priceInput.step = '0.01';
+            priceInput.value = item.price;
+            priceInput.className = 'ocr-price';
+            priceInput.title = 'Preço';
+            
+            const pkgInput = document.createElement('input');
+            pkgInput.type = 'number';
+            pkgInput.value = item.pkg;
+            pkgInput.className = 'ocr-pkg';
+            pkgInput.title = 'Qtd Emb.';
+            
+            const unitSelect = createUnitSelect('ocr-unit', item.pkgUnit);
+            
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'btn-secondary btn-sm';
+            saveBtn.textContent = 'Salvar no Estoque';
+            saveBtn.onclick = () => {
+                const n = nameInput.value.trim();
+                const p = parseFloat(priceInput.value) || 0;
+                const pkg = parseFloat(pkgInput.value) || 0;
+                const u = unitSelect.value;
+                if(n && p > 0 && pkg > 0) {
+                    saveToInventory(n, p, pkg, u);
+                    row.style.opacity = '0.5';
+                    saveBtn.textContent = 'Salvo!';
+                    saveBtn.disabled = true;
+                } else {
+                    alert('Preencha todos os campos do produto corretamente para salvar.');
+                }
+            };
+            
+            row.appendChild(nameInput);
+            row.appendChild(priceInput);
+            row.appendChild(pkgInput);
+            row.appendChild(unitSelect);
+            row.appendChild(saveBtn);
+            
+            ocrItemsList.appendChild(row);
+        });
+    }
+
+    function saveToInventory(name, price, pkg, pkgUnit) {
+        const existingIndex = inventory.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
+        if (existingIndex >= 0) {
+            inventory[existingIndex] = { name, price, pkg, pkgUnit };
+        } else {
+            inventory.push({ name, price, pkg, pkgUnit });
+        }
+        localStorage.setItem('calculacusto_mei_inventory', JSON.stringify(inventory));
+        updateDatalist();
+    }
 });

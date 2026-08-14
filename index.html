@@ -30,6 +30,28 @@
                 </div>
             </div>
 
+            <section class="card" id="ocr-section">
+                <h2>Importar Nota Fiscal (PDF ou Imagem)</h2>
+                <p class="subtitle">Faça upload de uma foto ou PDF do seu cupom fiscal. O sistema tentará ler os itens e adicionar ao seu estoque.</p>
+                
+                <div class="ocr-upload-area">
+                    <input type="file" id="receipt-upload" accept="image/*,application/pdf" style="display: none;">
+                    <button type="button" id="btn-upload-receipt" class="btn-secondary">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        Escolher Arquivo (PDF ou Imagem)
+                    </button>
+                    <div id="ocr-loading" class="hidden" style="margin-top: 10px; font-weight: 500; color: var(--primary-color);">Lendo documento... Isso pode levar alguns segundos.</div>
+                </div>
+
+                <div id="ocr-results" class="hidden mt-3">
+                    <h3>Itens Encontrados:</h3>
+                    <p class="subtitle" style="font-size: 0.85rem;">Revise os valores, preencha o tamanho do pacote e clique em "Salvar" para mandar para o estoque.</p>
+                    <div id="ocr-items-list" class="ocr-items-container">
+                        <!-- Itens extraídos aparecerão aqui -->
+                    </div>
+                </div>
+            </section>
+
             <section class="card" id="materials-section">
                 <h2>1. Materiais e Insumos (Conversão Automática)</h2>
                 <p class="subtitle">Adicione a embalagem comprada e o quanto usou. Pode misturar Kg com gramas que o sistema calcula o custo exato sozinho!</p>
@@ -138,6 +160,10 @@
             </section>
         </main>
     </div>
+    
+    <!-- Scripts for PDF and OCR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
