@@ -497,25 +497,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function parseReceiptLines(lines) {
         const items = [];
-        // Tenta achar padrões com preços no final da linha
-        const priceRegex = /(?:R\$)?\s*(\d+[.,]\d{2})$/i;
+        // Tenta achar padrões com preços no final da linha, permitindo lixo não numérico no fim como ")", "]"
+        const priceRegex = /(\d+[.,]\d{2})[^\d]*$/i;
         
         lines.forEach(line => {
             const match = line.match(priceRegex);
             if(match) {
                 let name = line.replace(priceRegex, '').trim();
-                // Limpeza basica de lixo comum em cupom
+                // Limpeza basica de lixo comum no início (ex: 001 123456)
                 name = name.replace(/^[\d\s*X*-]+/, '').trim(); 
+                
+                // Remove termos indesejados comuns no final do nome que indicam a unidade (ex: 1un F1, 1un T19)
+                name = name.replace(/\d+\s*(?:un|cx|pc)\s*.*$/i, '').trim();
+
                 if(name.length > 2) {
                     const price = parseFloat(match[1].replace(',', '.'));
-                    // Tenta adivinhar tamanho se houver algo como "1KG" ou "500G" no nome
+                    // Ignora linhas que obviamente não são produtos (como SUBTOTAL, TOTAL, TEF, TROCO)
+                    const upperName = name.toUpperCase();
+                    if(upperName.includes('TOTAL') || upperName.includes('SUBTOTAL') || upperName.includes('TROCO') || upperName.includes('DINHEIRO') || upperName.includes('CARTAO')) {
+                        return; // Pula essa iteração
+                    }
+
+                    // Tenta adivinhar tamanho se houver algo como "1KG" ou "500G" no nome original
                     let pkg = 1;
                     let pkgUnit = 'un';
                     
-                    const kgMatch = name.match(/(\d+[.,]?\d*)\s*KG/i);
-                    const gMatch = name.match(/(\d+[.,]?\d*)\s*G(?!\w)/i);
-                    const lMatch = name.match(/(\d+[.,]?\d*)\s*L(?!\w)/i);
-                    const mlMatch = name.match(/(\d+[.,]?\d*)\s*ML/i);
+                    const kgMatch = line.match(/(\d+[.,]?\d*)\s*KG/i);
+                    const gMatch = line.match(/(\d+[.,]?\d*)\s*G(?!\w)/i);
+                    const lMatch = line.match(/(\d+[.,]?\d*)\s*L(?!\w)/i);
+                    const mlMatch = line.match(/(\d+[.,]?\d*)\s*ML/i);
                     
                     if (kgMatch) { pkg = parseFloat(kgMatch[1].replace(',','.')); pkgUnit = 'kg'; }
                     else if (gMatch) { pkg = parseFloat(gMatch[1].replace(',','.')); pkgUnit = 'g'; }
