@@ -15,6 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let hourlyRateValue = 0;
 
+    // Unit options
+    const unitOptions = [
+        { value: 'g', label: 'Gramas (g)', multiplier: 1, type: 'mass' },
+        { value: 'kg', label: 'Quilos (Kg)', multiplier: 1000, type: 'mass' },
+        { value: 'ml', label: 'Mililitros (ml)', multiplier: 1, type: 'volume' },
+        { value: 'l', label: 'Litros (L)', multiplier: 1000, type: 'volume' },
+        { value: 'un', label: 'Unidade(s)', multiplier: 1, type: 'unit' }
+    ];
+
     // Initialize
     loadData();
     calculateHourlyRate();
@@ -57,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const hours = parseFloat(hoursPerDayInput.value) || 0;
 
         if (salary > 0 && days > 0 && hours > 0) {
-            // Assume 4.33 weeks per month on average
             const weeksPerMonth = 4.33;
             const totalHoursPerMonth = days * hours * weeksPerMonth;
             hourlyRateValue = salary / totalHoursPerMonth;
@@ -68,41 +76,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function createUnitSelect(className, selectedValue = 'g') {
+        const select = document.createElement('select');
+        select.className = className;
+        unitOptions.forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.label;
+            if (opt.value === selectedValue) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+        return select;
+    }
+
     function addMaterialRow(data = {}) {
         const row = document.createElement('div');
         row.className = 'material-row';
+        row.style.counterIncrement = 'row-counter';
         
+        // 1. Name
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
         nameInput.placeholder = 'Insumo (Ex: Farinha)';
         nameInput.className = 'mat-name';
         nameInput.value = data.name || '';
 
+        // 2. Price
         const priceInput = document.createElement('input');
         priceInput.type = 'number';
-        priceInput.placeholder = 'R$ Pacote';
+        priceInput.placeholder = 'R$ Pago';
         priceInput.step = '0.01';
         priceInput.min = '0';
         priceInput.className = 'mat-price';
-        priceInput.title = 'Preço pago na embalagem';
         priceInput.value = data.price || '';
 
+        // 3. Package
+        const pkgDiv = document.createElement('div');
+        pkgDiv.className = 'input-with-unit';
         const pkgInput = document.createElement('input');
         pkgInput.type = 'number';
-        pkgInput.placeholder = 'Qtd Emb. (g/ml)';
+        pkgInput.placeholder = 'Qtd Emb.';
         pkgInput.min = '0';
         pkgInput.className = 'mat-pkg';
-        pkgInput.title = 'Quantidade total da embalagem (Ex: 1000 para 1kg)';
         pkgInput.value = data.pkg || '';
+        const pkgUnit = createUnitSelect('mat-pkg-unit', data.pkgUnit || 'kg');
+        pkgDiv.appendChild(pkgInput);
+        pkgDiv.appendChild(pkgUnit);
 
+        // 4. Used
+        const usedDiv = document.createElement('div');
+        usedDiv.className = 'input-with-unit';
         const usedInput = document.createElement('input');
         usedInput.type = 'number';
         usedInput.placeholder = 'Qtd Usada';
         usedInput.min = '0';
         usedInput.className = 'mat-used';
-        usedInput.title = 'Quantidade que você usa na receita';
         usedInput.value = data.used || '';
+        const usedUnit = createUnitSelect('mat-used-unit', data.usedUnit || 'g');
+        usedDiv.appendChild(usedInput);
+        usedDiv.appendChild(usedUnit);
 
+        // 5. Cost Display
+        const costDisplay = document.createElement('span');
+        costDisplay.className = 'row-cost-display';
+        costDisplay.textContent = 'R$ 0,00';
+
+        // 6. Remove Button
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.className = 'btn-remove';
@@ -116,27 +157,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
         row.appendChild(nameInput);
         row.appendChild(priceInput);
-        row.appendChild(pkgInput);
-        row.appendChild(usedInput);
+        row.appendChild(pkgDiv);
+        row.appendChild(usedDiv);
+        row.appendChild(costDisplay);
         row.appendChild(removeBtn);
 
         materialsList.appendChild(row);
     }
 
+    function getUnitMultiplier(unitValue) {
+        const option = unitOptions.find(o => o.value === unitValue);
+        return option ? option.multiplier : 1;
+    }
+
+    function getUnitType(unitValue) {
+        const option = unitOptions.find(o => o.value === unitValue);
+        return option ? option.type : 'unit';
+    }
+
     function calculateMaterialsTotal() {
         let total = 0;
         const rows = document.querySelectorAll('.material-row');
+        
         rows.forEach(row => {
             const price = parseFloat(row.querySelector('.mat-price').value) || 0;
             const pkg = parseFloat(row.querySelector('.mat-pkg').value) || 0;
+            const pkgUnit = row.querySelector('.mat-pkg-unit').value;
             const used = parseFloat(row.querySelector('.mat-used').value) || 0;
+            const usedUnit = row.querySelector('.mat-used-unit').value;
+            const costDisplay = row.querySelector('.row-cost-display');
+
+            let rowCost = 0;
 
             if (price > 0 && pkg > 0 && used > 0) {
-                // Rule of 3: Cost = (Price / Pkg Qtd) * Used Qtd
-                const proportionalCost = (price / pkg) * used;
-                total += proportionalCost;
+                // Check if units are compatible (e.g. mass and volume shouldn't mix, but for MVP let's just convert to base units)
+                const pkgType = getUnitType(pkgUnit);
+                const usedType = getUnitType(usedUnit);
+                
+                if(pkgType !== usedType && pkgType !== 'unit' && usedType !== 'unit') {
+                    // Warning: incompatible units
+                    costDisplay.textContent = 'Erro de un.';
+                    costDisplay.style.color = 'var(--danger-color)';
+                } else {
+                    const pkgBase = pkg * getUnitMultiplier(pkgUnit);
+                    const usedBase = used * getUnitMultiplier(usedUnit);
+                    
+                    rowCost = (price / pkgBase) * usedBase;
+                    costDisplay.textContent = formatCurrency(rowCost);
+                    costDisplay.style.color = 'var(--primary-color)';
+                }
+            } else {
+                costDisplay.textContent = 'R$ 0,00';
+                costDisplay.style.color = 'var(--text-muted)';
             }
+            
+            total += rowCost;
         });
+        
         return total;
     }
 
@@ -146,26 +223,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function calculatePrice() {
-        // 1. Calculate Materials Cost
         const totalMaterialsCost = calculateMaterialsTotal();
         updatePartialMaterialsCost();
 
-        // 2. Calculate Labor Cost
         const timeSpent = parseFloat(document.getElementById('time-spent').value) || 0;
         const laborCost = hourlyRateValue * timeSpent;
-
-        // 3. Other Costs
         const otherCosts = parseFloat(document.getElementById('other-costs').value) || 0;
-
-        // 4. Total Cost (Minimum Price)
         const totalCost = totalMaterialsCost + laborCost + otherCosts;
-
-        // 5. Margin and Suggested Price
         const margin = parseFloat(document.getElementById('profit-margin').value) || 0;
         const profit = totalCost * (margin / 100);
         const suggestedPrice = totalCost + profit;
 
-        // Update UI
         document.getElementById('res-materials').textContent = formatCurrency(totalMaterialsCost);
         document.getElementById('res-labor').textContent = formatCurrency(laborCost);
         document.getElementById('res-other').textContent = formatCurrency(otherCosts);
@@ -195,7 +263,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: row.querySelector('.mat-name').value,
                 price: row.querySelector('.mat-price').value,
                 pkg: row.querySelector('.mat-pkg').value,
-                used: row.querySelector('.mat-used').value
+                pkgUnit: row.querySelector('.mat-pkg-unit').value,
+                used: row.querySelector('.mat-used').value,
+                usedUnit: row.querySelector('.mat-used-unit').value
             });
         });
 

@@ -30,7 +30,7 @@ body {
 }
 
 .container {
-    max-width: 700px;
+    max-width: 800px;
     margin: 0 auto;
 }
 
@@ -93,7 +93,7 @@ header p {
 
 .materials-header {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 40px;
+    grid-template-columns: 2fr 1fr 1.5fr 1.5fr 1fr 40px;
     gap: 0.5rem;
     font-size: 0.8rem;
     font-weight: 600;
@@ -104,7 +104,7 @@ header p {
 
 .material-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr 40px;
+    grid-template-columns: 2fr 1fr 1.5fr 1.5fr 1fr 40px;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
     align-items: center;
@@ -114,15 +114,36 @@ header p {
     border: 1px solid var(--border-color);
 }
 
-.material-row input {
+.material-row input, .material-row select {
     width: 100%;
+}
+
+.input-with-unit {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.input-with-unit input {
+    flex: 2;
+}
+
+.input-with-unit select {
+    flex: 1;
+    min-width: 60px;
+}
+
+.row-cost-display {
+    font-size: 0.85rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    text-align: right;
 }
 
 .material-total-display {
     text-align: right;
-    margin-top: 0.5rem;
+    margin-top: 1rem;
     margin-bottom: 1rem;
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: var(--text-muted);
 }
 
@@ -196,15 +217,16 @@ header p {
     margin-top: 0.25rem;
 }
 
-input[type="number"], input[type="text"] {
+input, select {
     padding: 0.5rem;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     font-size: 0.95rem;
     font-family: inherit;
+    background-color: white;
 }
 
-input[type="number"]:focus, input[type="text"]:focus {
+input:focus, select:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
@@ -324,22 +346,35 @@ button {
     font-weight: 600;
 }
 
-@media (max-width: 600px) {
-    .materials-header {
+@media (max-width: 768px) {
+    .desktop-only {
         display: none;
     }
+    
     .material-row {
-        grid-template-columns: 1fr 1fr;
-        grid-template-areas: 
-            "name name"
-            "price pkg"
-            "used remove";
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        position: relative;
+        padding-top: 2rem;
     }
-    .material-row .mat-name { grid-area: name; }
-    .material-row .mat-price { grid-area: price; }
-    .material-row .mat-pkg { grid-area: pkg; }
-    .material-row .mat-used { grid-area: used; }
-    .material-row .btn-remove { grid-area: remove; }
+    
+    .btn-remove {
+        position: absolute;
+        top: 0.25rem;
+        right: 0.25rem;
+    }
+    
+    .material-row::before {
+        content: 'Insumo ' counter(row-counter);
+        position: absolute;
+        top: 0.5rem;
+        left: 0.5rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+    
+    .material-row .mat-name { margin-bottom: 0.25rem; }
     
     .input-row {
         grid-template-columns: 1fr;
@@ -348,5 +383,13 @@ button {
     
     .action-buttons {
         grid-template-columns: 1fr;
+    }
+    
+    .row-cost-display {
+        text-align: left;
+        background: #e0e7ff;
+        padding: 0.5rem;
+        border-radius: 4px;
+        display: inline-block;
     }
 }
