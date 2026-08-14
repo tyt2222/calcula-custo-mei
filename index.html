@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalculaCusto MEI</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CalculaCusto MEI</h1>
+            <p>Precificação guiada de produtos artesanais</p>
+        </header>
+
+        <main>
+            <section class="card" id="materials-section">
+                <h2>1. Materiais e Insumos</h2>
+                <p class="subtitle">Adicione tudo o que você gasta para fazer <strong>uma unidade</strong> do produto (ex: farinha, tecido, embalagem).</p>
+                <div id="materials-list">
+                    <!-- Material items will be added here -->
+                </div>
+                <button type="button" id="add-material-btn" class="btn-secondary">+ Adicionar Material</button>
+            </section>
+
+            <section class="card" id="labor-section">
+                <h2>2. Mão de Obra e Custos Invisíveis</h2>
+                <div class="input-group">
+                    <label for="hourly-rate">Valor da sua hora de trabalho (R$):</label>
+                    <input type="number" id="hourly-rate" step="0.01" min="0" placeholder="Ex: 15.00">
+                    <small>Dica: Salário mensal desejado / horas trabalhadas no mês.</small>
+                </div>
+                <div class="input-group">
+                    <label for="time-spent">Tempo gasto para produzir (horas):</label>
+                    <input type="number" id="time-spent" step="0.1" min="0" placeholder="Ex: 2.5">
+                </div>
+                <div class="input-group">
+                    <label for="other-costs">Custos adicionais (gás, energia, etc - por unidade R$):</label>
+                    <input type="number" id="other-costs" step="0.01" min="0" placeholder="Ex: 2.00">
+                </div>
+            </section>
+
+            <section class="card" id="margin-section">
+                <h2>3. Margem de Lucro</h2>
+                <div class="input-group">
+                    <label for="profit-margin">Margem desejada (%):</label>
+                    <input type="number" id="profit-margin" step="1" min="0" value="30">
+                </div>
+            </section>
+
+            <button type="button" id="calculate-btn" class="btn-primary">Calcular Preço</button>
+
+            <section id="result-section" class="card result-card hidden">
+                <h2>Resumo da Precificação</h2>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <span>Custo dos Materiais:</span>
+                        <strong id="res-materials">R$ 0,00</strong>
+                    </div>
+                    <div class="result-item">
+                        <span>Custo da Mão de Obra:</span>
+                        <strong id="res-labor">R$ 0,00</strong>
+                    </div>
+                    <div class="result-item">
+                        <span>Custos Adicionais:</span>
+                        <strong id="res-other">R$ 0,00</strong>
+                    </div>
+                    <div class="result-item total-cost">
+                        <span>Custo Total (Preço Mínimo):</span>
+                        <strong id="res-total-cost">R$ 0,00</strong>
+                    </div>
+                    <div class="result-item suggested-price">
+                        <span>Preço de Venda Sugerido:</span>
+                        <strong id="res-suggested-price">R$ 0,00</strong>
+                    </div>
+                    <div class="result-item profit">
+                        <span>Seu Lucro Líquido:</span>
+                        <strong id="res-profit">R$ 0,00</strong>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
