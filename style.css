@@ -9,6 +9,10 @@
     --card-bg: #ffffff;
     --border-color: #e2e8f0;
     --success-color: #10b981;
+    --danger-color: #ef4444;
+    --danger-hover: #dc2626;
+    --whatsapp-color: #25D366;
+    --whatsapp-hover: #128C7E;
 }
 
 * {
@@ -26,13 +30,14 @@ body {
 }
 
 .container {
-    max-width: 600px;
+    max-width: 700px;
     margin: 0 auto;
 }
 
 header {
     text-align: center;
     margin-bottom: 2rem;
+    position: relative;
 }
 
 header h1 {
@@ -45,6 +50,22 @@ header p {
     color: var(--text-muted);
 }
 
+.save-status {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--success-color);
+    background-color: #ecfdf5;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.save-status.show {
+    opacity: 1;
+}
+
 .card {
     background-color: var(--card-bg);
     border: 1px solid var(--border-color);
@@ -52,6 +73,10 @@ header p {
     padding: 1.5rem;
     margin-bottom: 1.5rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.header-input {
+    padding: 1rem 1.5rem;
 }
 
 .card h2 {
@@ -66,31 +91,91 @@ header p {
     margin-bottom: 1rem;
 }
 
+.materials-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 40px;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    padding: 0 0.5rem;
+}
+
 .material-row {
     display: grid;
-    grid-template-columns: 2fr 1fr auto;
+    grid-template-columns: 2fr 1fr 1fr 1fr 40px;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
     align-items: center;
+    background: #f8fafc;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
 }
 
 .material-row input {
     width: 100%;
 }
 
+.material-total-display {
+    text-align: right;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
 .btn-remove {
     background: none;
     border: none;
-    color: #ef4444;
+    color: var(--danger-color);
     cursor: pointer;
     font-weight: bold;
     font-size: 1.2rem;
-    padding: 0.25rem 0.5rem;
+    padding: 0.25rem;
     border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-remove:hover {
     background-color: #fee2e2;
+}
+
+.input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+}
+
+.calculator-box {
+    background-color: #eff6ff;
+    border: 1px dashed #93c5fd;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+}
+
+.calculator-box h3 {
+    font-size: 1rem;
+    color: #1e3a8a;
+    margin-bottom: 0.75rem;
+}
+
+.calculated-highlight {
+    margin-top: 1rem;
+    font-size: 1.05rem;
+    color: #1e40af;
+    background: #dbeafe;
+    padding: 0.5rem;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.mt-3 {
+    margin-top: 1.5rem;
 }
 
 .input-group {
@@ -115,7 +200,7 @@ input[type="number"], input[type="text"] {
     padding: 0.5rem;
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-family: inherit;
 }
 
@@ -125,6 +210,13 @@ input[type="number"]:focus, input[type="text"]:focus {
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
+.action-buttons {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
 button {
     font-family: inherit;
     font-size: 1rem;
@@ -132,6 +224,10 @@ button {
     cursor: pointer;
     border-radius: 4px;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
 .btn-secondary {
@@ -153,11 +249,33 @@ button {
     padding: 0.75rem 1.5rem;
     width: 100%;
     font-size: 1.1rem;
-    margin-bottom: 1.5rem;
 }
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
+}
+
+.btn-danger {
+    background-color: white;
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+}
+
+.btn-danger:hover {
+    background-color: #fee2e2;
+}
+
+.btn-whatsapp {
+    background-color: var(--whatsapp-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    width: 100%;
+    font-size: 1rem;
+}
+
+.btn-whatsapp:hover {
+    background-color: var(--whatsapp-hover);
 }
 
 .hidden {
@@ -204,4 +322,31 @@ button {
 .profit {
     color: var(--primary-color);
     font-weight: 600;
+}
+
+@media (max-width: 600px) {
+    .materials-header {
+        display: none;
+    }
+    .material-row {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas: 
+            "name name"
+            "price pkg"
+            "used remove";
+    }
+    .material-row .mat-name { grid-area: name; }
+    .material-row .mat-price { grid-area: price; }
+    .material-row .mat-pkg { grid-area: pkg; }
+    .material-row .mat-used { grid-area: used; }
+    .material-row .btn-remove { grid-area: remove; }
+    
+    .input-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .action-buttons {
+        grid-template-columns: 1fr;
+    }
 }

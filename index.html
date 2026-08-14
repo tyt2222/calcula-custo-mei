@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalculaCusto MEI</title>
+    <title>CalculaCusto MEI - Inteligente</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -11,45 +11,89 @@
     <div class="container">
         <header>
             <h1>CalculaCusto MEI</h1>
-            <p>Precificação guiada de produtos artesanais</p>
+            <p>Precificação inteligente para produtos artesanais</p>
+            <div id="save-status" class="save-status">Carregando seus dados...</div>
         </header>
 
         <main>
+            <div class="card header-input">
+                <div class="input-group">
+                    <label for="product-name">Nome do Produto que está precificando:</label>
+                    <input type="text" id="product-name" placeholder="Ex: Bolo de Cenoura com Chocolate">
+                </div>
+            </div>
+
             <section class="card" id="materials-section">
-                <h2>1. Materiais e Insumos</h2>
-                <p class="subtitle">Adicione tudo o que você gasta para fazer <strong>uma unidade</strong> do produto (ex: farinha, tecido, embalagem).</p>
+                <h2>1. Materiais e Insumos (Cálculo Proporcional)</h2>
+                <p class="subtitle">Adicione a embalagem fechada que você comprou e o quanto usou na receita. O sistema calcula a proporção sozinho!</p>
+                
+                <div class="materials-header">
+                    <span>Nome / Insumo</span>
+                    <span>Preço Pago</span>
+                    <span>Qtd Embalagem</span>
+                    <span>Qtd Usada</span>
+                    <span></span>
+                </div>
+                
                 <div id="materials-list">
                     <!-- Material items will be added here -->
                 </div>
-                <button type="button" id="add-material-btn" class="btn-secondary">+ Adicionar Material</button>
+                
+                <div class="material-total-display">
+                    Custo parcial de materiais: <strong id="partial-materials-cost">R$ 0,00</strong>
+                </div>
+
+                <button type="button" id="add-material-btn" class="btn-secondary">+ Adicionar Insumo</button>
             </section>
 
             <section class="card" id="labor-section">
                 <h2>2. Mão de Obra e Custos Invisíveis</h2>
-                <div class="input-group">
-                    <label for="hourly-rate">Valor da sua hora de trabalho (R$):</label>
-                    <input type="number" id="hourly-rate" step="0.01" min="0" placeholder="Ex: 15.00">
-                    <small>Dica: Salário mensal desejado / horas trabalhadas no mês.</small>
+                
+                <div class="calculator-box">
+                    <h3>Descubra o valor da sua hora:</h3>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="desired-salary">Salário Desejado / Mês (R$):</label>
+                            <input type="number" id="desired-salary" step="100" min="0" placeholder="Ex: 3000">
+                        </div>
+                        <div class="input-group">
+                            <label for="days-per-week">Dias trab. / Semana:</label>
+                            <input type="number" id="days-per-week" step="1" min="1" max="7" value="5">
+                        </div>
+                        <div class="input-group">
+                            <label for="hours-per-day">Horas / Dia:</label>
+                            <input type="number" id="hours-per-day" step="1" min="1" max="24" value="8">
+                        </div>
+                    </div>
+                    <div class="calculated-highlight">
+                        Valor da sua hora de trabalho: <strong id="calculated-hourly-rate">R$ 0,00</strong>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label for="time-spent">Tempo gasto para produzir (horas):</label>
-                    <input type="number" id="time-spent" step="0.1" min="0" placeholder="Ex: 2.5">
+
+                <div class="input-group mt-3">
+                    <label for="time-spent">Tempo gasto nesta receita/produto (horas):</label>
+                    <input type="number" id="time-spent" step="0.1" min="0" placeholder="Ex: 2.5 (2 horas e meia)">
                 </div>
+                
                 <div class="input-group">
-                    <label for="other-costs">Custos adicionais (gás, energia, etc - por unidade R$):</label>
-                    <input type="number" id="other-costs" step="0.01" min="0" placeholder="Ex: 2.00">
+                    <label for="other-costs">Custos adicionais (energia, gás, frete, embalagem final - R$):</label>
+                    <input type="number" id="other-costs" step="0.01" min="0" placeholder="Ex: 5.00">
                 </div>
             </section>
 
             <section class="card" id="margin-section">
                 <h2>3. Margem de Lucro</h2>
                 <div class="input-group">
-                    <label for="profit-margin">Margem desejada (%):</label>
+                    <label for="profit-margin">Margem de lucro desejada (%):</label>
                     <input type="number" id="profit-margin" step="1" min="0" value="30">
+                    <small>Dica: É o percentual de ganho limpo em cima do custo total de produção.</small>
                 </div>
             </section>
 
-            <button type="button" id="calculate-btn" class="btn-primary">Calcular Preço</button>
+            <div class="action-buttons">
+                <button type="button" id="calculate-btn" class="btn-primary">Calcular Preço Final</button>
+                <button type="button" id="clear-btn" class="btn-danger">Limpar Tudo</button>
+            </div>
 
             <section id="result-section" class="card result-card hidden">
                 <h2>Resumo da Precificação</h2>
@@ -67,7 +111,7 @@
                         <strong id="res-other">R$ 0,00</strong>
                     </div>
                     <div class="result-item total-cost">
-                        <span>Custo Total (Preço Mínimo):</span>
+                        <span>Custo Total (Preço de Custo):</span>
                         <strong id="res-total-cost">R$ 0,00</strong>
                     </div>
                     <div class="result-item suggested-price">
@@ -75,10 +119,15 @@
                         <strong id="res-suggested-price">R$ 0,00</strong>
                     </div>
                     <div class="result-item profit">
-                        <span>Seu Lucro Líquido:</span>
+                        <span>Seu Lucro Líquido por unidade:</span>
                         <strong id="res-profit">R$ 0,00</strong>
                     </div>
                 </div>
+                
+                <button type="button" id="share-whatsapp-btn" class="btn-whatsapp mt-3">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                    Compartilhar Resumo no WhatsApp
+                </button>
             </section>
         </main>
     </div>
