@@ -495,6 +495,67 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const commonAbbreviations = {
+        'CHOC': 'Chocolate',
+        'HIDRAT': 'Hidratante',
+        'ESPONJA N RISCA': 'Esponja Não Risca',
+        'S SC': '',
+        'GOMA MASCAR': 'Chiclete',
+        'PANO M USO': 'Pano Multiuso',
+        'OVO MENI': 'Ovo para Meninas',
+        'BISC': 'Biscoito',
+        'BOL': 'Bolacha',
+        'MAC': 'Macarrão',
+        'MOL': 'Molho',
+        'TOM': 'Tomate',
+        'FAR': 'Farinha',
+        'TRIGO': 'Trigo',
+        'ACUCAR': 'Açúcar',
+        'REFIN': 'Refinado',
+        'OLEO': 'Óleo',
+        'EXTR': 'Extrato',
+        'COND': 'Condensado',
+        'CREM': 'Creme',
+        'INT': 'Integral',
+        'DESN': 'Desnatado',
+        'MARG': 'Margarina',
+        'S/SAL': 'Sem Sal',
+        'C/SAL': 'Com Sal',
+        'LIQ': 'Líquido',
+        'SAB': 'Sabão',
+        'AMAC': 'Amaciante',
+        'DETERG': 'Detergente',
+        'PAP': 'Papel',
+        'HIG': 'Higiênico',
+        'DESC': 'Descartável',
+        'CONG': 'Congelado',
+        'RESFR': 'Resfriado',
+        'AGUA': 'Água',
+        'MIN': 'Mineral',
+        'REFRI': 'Refrigerante',
+        'CERV': 'Cerveja',
+        'GF': 'Garrafa',
+        'BOMB': 'Bombom',
+        'BDJ': 'Bandeja',
+        'VD': 'Vidro',
+        'PCT': 'Pacote'
+    };
+
+    function expandAbbreviations(text) {
+        let expanded = text;
+        // Expande abreviações comuns usando word boundaries
+        for (const [abbr, full] of Object.entries(commonAbbreviations)) {
+            const regex = new RegExp(`\\b${abbr}\\b`, 'gi');
+            expanded = expanded.replace(regex, full);
+        }
+        
+        // Limpa espaços duplos que possam ter sobrado
+        expanded = expanded.replace(/\s+/g, ' ').trim();
+        
+        // Transforma tudo para Title Case (Iniciais Maiúsculas)
+        return expanded.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+    }
+
     function parseReceiptLines(lines) {
         const items = [];
         // Tenta achar padrões com preços no final da linha, permitindo lixo não numérico no fim como ")", "]"
@@ -531,6 +592,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     else if (gMatch) { pkg = parseFloat(gMatch[1].replace(',','.')); pkgUnit = 'g'; }
                     else if (lMatch) { pkg = parseFloat(lMatch[1].replace(',','.')); pkgUnit = 'l'; }
                     else if (mlMatch) { pkg = parseFloat(mlMatch[1].replace(',','.')); pkgUnit = 'ml'; }
+                    
+                    // Melhora a formatação do nome final
+                    name = expandAbbreviations(name);
                     
                     items.push({ name, price, pkg, pkgUnit });
                 }
