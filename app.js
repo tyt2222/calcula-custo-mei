@@ -50,7 +50,66 @@ document.addEventListener('DOMContentLoaded', () => {
         { value: 'un', label: 'Unidade(s)', multiplier: 1, type: 'unit' }
     ];
 
+    // Inventory for Auto-complete
+    let inventory = [];
+
+    function loadInventory() {
+        const raw = localStorage.getItem('calculacusto_mei_inventory');
+        if (raw) {
+            try {
+                inventory = JSON.parse(raw);
+            } catch (e) {
+                inventory = [];
+            }
+        }
+        updateDatalist();
+    }
+
+    function updateDatalist() {
+        let datalist = document.getElementById('inventory-list');
+        if (!datalist) {
+            datalist = document.createElement('datalist');
+            datalist.id = 'inventory-list';
+            document.body.appendChild(datalist);
+        }
+        datalist.innerHTML = '';
+        inventory.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.name;
+            datalist.appendChild(option);
+        });
+    }
+
+    function updateInventoryFromCurrent() {
+        let inventoryChanged = false;
+        document.querySelectorAll('.material-row').forEach(row => {
+            const name = row.querySelector('.mat-name').value.trim();
+            const price = parseFloat(row.querySelector('.mat-price').value) || 0;
+            const pkg = parseFloat(row.querySelector('.mat-pkg').value) || 0;
+            const pkgUnit = row.querySelector('.mat-pkg-unit').value;
+
+            if (name && price > 0 && pkg > 0) {
+                const existingIndex = inventory.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
+                if (existingIndex >= 0) {
+                    if (inventory[existingIndex].price !== price || inventory[existingIndex].pkg !== pkg || inventory[existingIndex].pkgUnit !== pkgUnit) {
+                        inventory[existingIndex] = { name, price, pkg, pkgUnit };
+                        inventoryChanged = true;
+                    }
+                } else {
+                    inventory.push({ name, price, pkg, pkgUnit });
+                    inventoryChanged = true;
+                }
+            }
+        });
+
+        if (inventoryChanged) {
+            localStorage.setItem('calculacusto_mei_inventory', JSON.stringify(inventory));
+            updateDatalist();
+        }
+    }
+
     // Initialize
+    loadInventory();
     loadData();
     calculateHourlyRate();
     updatePartialMaterialsCost();
@@ -122,12 +181,13 @@ document.addEventListener('DOMContentLoaded', () => {
         row.className = 'material-row';
         row.style.counterIncrement = 'row-counter';
         
-        // 1. Name
+        // 1. Name with Auto-complete
         const nameInput = document.createElement('input');
         nameInput.type = 'text';
         nameInput.placeholder = 'Insumo (Ex: Farinha)';
         nameInput.className = 'mat-name';
         nameInput.value = data.name || '';
+        nameInput.setAttribute('list', 'inventory-list');
 
         // 2. Price
         const priceInput = document.createElement('input');
@@ -181,6 +241,19 @@ document.addEventListener('DOMContentLoaded', () => {
             saveData();
         };
 
+        // Auto-fill logic when selecting from datalist
+        nameInput.addEventListener('change', (e) => {
+            const typedName = e.target.value.trim();
+            const found = inventory.find(i => i.name.toLowerCase() === typedName.toLowerCase());
+            if (found) {
+                if (!priceInput.value) priceInput.value = found.price;
+                if (!pkgInput.value) pkgInput.value = found.pkg;
+                if (pkgUnit.value !== found.pkgUnit) pkgUnit.value = found.pkgUnit;
+                updatePartialMaterialsCost();
+                saveData();
+            }
+        });
+
         row.appendChild(nameInput);
         row.appendChild(priceInput);
         row.appendChild(pkgDiv);
@@ -228,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     rowCost = (price / pkgBase) * usedBase;
                     costDisplay.textContent = formatCurrency(rowCost);
-                    costDisplay.style.color = 'var(--primary-color)';
+                    costDisplay.style.color = ''; // reset to css default
                 }
             } else {
                 costDisplay.textContent = 'R$ 0,00';
@@ -293,6 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         localStorage.setItem('calculacusto_mei_data', JSON.stringify(data));
+        updateInventoryFromCurrent(); // update datalist
         showSaveStatus();
     }
 
@@ -324,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function clearAll() {
-        if(confirm('Tem certeza que deseja limpar todos os dados?')) {
+        if(confirm('Tem certeza que deseja limpar todos os dados do produto atual? (O inventário de insumos não será apagado)')) {
             localStorage.removeItem('calculacusto_mei_data');
             location.reload();
         }
